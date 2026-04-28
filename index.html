@@ -17,60 +17,73 @@
   <p>Quarterly global net revenue, Q1 2020 to Q4 2025, USD billions.</p>
   <div id="chart"></div>
 
-  <script>
-    async function loadCSV() {
-      const response = await fetch("abbvie_immunology_revenue.csv");
-      const text = await response.text();
-      const lines = text.trim().split("\n");
-      const headers = lines[0].split(",");
-      const data = lines.slice(1).map(line => {
-        const values = line.split(",");
-        return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
+ <script>
+  async function loadCSV() {
+    const response = await fetch("abbvie_immunology_revenue.csv");
+    const text = await response.text();
+
+    const lines = text.trim().split("\n");
+    const headers = lines[0].split(",");
+
+    const data = lines.slice(1).map(line => {
+      const values = line.split(",");
+      let obj = {};
+      headers.forEach((h, i) => {
+        obj[h.trim()] = values[i];
       });
+      return obj;
+    });
 
-      const x = data.map(d => d.period_label);
+    console.log(data); // DEBUG: check in browser console
 
-      const traces = [
-        {
-          x: x,
-          y: data.map(d => Number(d.humira_revenue_billions)),
-          mode: "lines+markers",
-          name: "Humira"
-        },
-        {
-          x: x,
-          y: data.map(d => Number(d.skyrizi_revenue_billions)),
-          mode: "lines+markers",
-          name: "Skyrizi"
-        },
-        {
-          x: x,
-          y: data.map(d => Number(d.rinvoq_revenue_billions)),
-          mode: "lines+markers",
-          name: "Rinvoq"
-        },
-        {
-          x: x,
-          y: data.map(d => Number(d.total_immunology_revenue_billions)),
-          mode: "lines+markers",
-          name: "Total Immunology",
-          line: { dash: "dash", width: 4 }
-        }
-      ];
+    const x = data.map(d => d.period_label);
 
-      const layout = {
-        title: "Quarterly Revenue Trend Lines",
-        xaxis: { title: "Quarter", tickangle: -45 },
-        yaxis: { title: "Revenue ($ billions)" },
-        legend: { orientation: "h", y: -0.25 },
-        margin: { t: 60, b: 120, l: 70, r: 30 }
-      };
-
-      Plotly.newPlot("chart", traces, layout, { responsive: true });
+    function safeNumber(val) {
+      const n = Number(val);
+      return isNaN(n) ? null : n;
     }
 
-    loadCSV();
-  </script>
+    const traces = [
+      {
+        x: x,
+        y: data.map(d => safeNumber(d.humira_revenue_billions)),
+        mode: "lines+markers",
+        name: "Humira"
+      },
+      {
+        x: x,
+        y: data.map(d => safeNumber(d.skyrizi_revenue_billions)),
+        mode: "lines+markers",
+        name: "Skyrizi"
+      },
+      {
+        x: x,
+        y: data.map(d => safeNumber(d.rinvoq_revenue_billions)),
+        mode: "lines+markers",
+        name: "Rinvoq"
+      },
+      {
+        x: x,
+        y: data.map(d => safeNumber(d.total_immunology_revenue_billions)),
+        mode: "lines+markers",
+        name: "Total Immunology",
+        line: { dash: "dash", width: 4, color: "red" }
+      }
+    ];
+
+    const layout = {
+      title: "Quarterly Revenue Trend Lines",
+      xaxis: { title: "Quarter", tickangle: -45 },
+      yaxis: { title: "Revenue ($ billions)" },
+      legend: { orientation: "h", y: -0.25 },
+      margin: { t: 60, b: 120, l: 70, r: 30 }
+    };
+
+    Plotly.newPlot("chart", traces, layout, { responsive: true });
+  }
+
+  loadCSV();
+</script>
 </body>
 </html>
  
