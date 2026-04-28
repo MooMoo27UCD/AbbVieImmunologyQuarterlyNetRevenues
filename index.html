@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AbbVie Immunology Revenue Trends</title>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background: #fafafa; color: #222; }
+    h1 { margin-bottom: 4px; }
+    p { margin-top: 0; color: #555; }
+    #chart { width: 100%; max-width: 1100px; height: 650px; }
+  </style>
+</head>
+<body>
+  <h1>AbbVie Immunology Product Revenue Trends</h1>
+  <p>Quarterly global net revenue, Q1 2020 to Q4 2025, USD billions.</p>
+  <div id="chart"></div>
+
+  <script>
+    async function loadCSV() {
+      const response = await fetch("abbvie_immunology_revenue.csv");
+      const text = await response.text();
+      const lines = text.trim().split("\n");
+      const headers = lines[0].split(",");
+      const data = lines.slice(1).map(line => {
+        const values = line.split(",");
+        return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
+      });
+
+      const x = data.map(d => d.period_label);
+
+      const traces = [
+        {
+          x: x,
+          y: data.map(d => Number(d.humira_revenue_billions)),
+          mode: "lines+markers",
+          name: "Humira"
+        },
+        {
+          x: x,
+          y: data.map(d => Number(d.skyrizi_revenue_billions)),
+          mode: "lines+markers",
+          name: "Skyrizi"
+        },
+        {
+          x: x,
+          y: data.map(d => Number(d.rinvoq_revenue_billions)),
+          mode: "lines+markers",
+          name: "Rinvoq"
+        },
+        {
+          x: x,
+          y: data.map(d => Number(d.total_immunology_revenue_billions)),
+          mode: "lines+markers",
+          name: "Total Immunology",
+          line: { dash: "dash", width: 4 }
+        }
+      ];
+
+      const layout = {
+        title: "Quarterly Revenue Trend Lines",
+        xaxis: { title: "Quarter", tickangle: -45 },
+        yaxis: { title: "Revenue ($ billions)" },
+        legend: { orientation: "h", y: -0.25 },
+        margin: { t: 60, b: 120, l: 70, r: 30 }
+      };
+
+      Plotly.newPlot("chart", traces, layout, { responsive: true });
+    }
+
+    loadCSV();
+  </script>
+</body>
+</html>
